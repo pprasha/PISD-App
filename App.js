@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native'; // Import Alert component
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, Linking } from 'react-native'; // Import Alert component
 import axios from 'axios';
 import Papa from 'papaparse';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // Import the Icon component
 import {Picker} from '@react-native-picker/picker';
+// import PDFViewer from 'pdf-viewer-reactjs'
+// import { Worker, Viewer } from '@react-pdf-viewer';
+
+
 
 // Import your logo image
 import LogoImage from './assets/logo.png';
@@ -12,6 +16,7 @@ const App = () => {
   const [currentDate, setCurrentDate] = useState('');
   const [currentTime, setCurrentTime] = useState('');
   const [currentDay, setCurrentDay] = useState('');
+  const [scheduleURL, setScheduleURL] = useState('');
   const [variableLetter, setVariableLetter] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [selectedSchool, setSelectedSchool] = useState('');
@@ -43,6 +48,9 @@ const App = () => {
           const dateIndex = headers.indexOf('Date');
           const dayIndex = headers.indexOf('Day');
           const alertIndex = headers.indexOf('Alert');
+          // console.log(headers.indexOf('Alert'))
+          // console.log(headers.indexOf('Schedule'))
+          const scheduleURLIndex = headers.indexOf('Schedule');
   
           // Assuming the first row contains headers and actual data starts from the second row
           for (let i = 1; i < data.length; i++) {
@@ -51,9 +59,10 @@ const App = () => {
               // Found the row for today's date
               const variableLetter = row[dayIndex];
               const alertData = row[alertIndex];
-              
+              const scheduleURL = row[scheduleURLIndex];
+              setScheduleURL(scheduleURL);
               setVariableLetter(variableLetter || 'Data not found');
-              setAlertMessage(alertData || 'No specific alerts');
+              setAlertMessage(alertData || '');
               return; // Exit the loop and function once the match is found
             }
           }
@@ -120,24 +129,39 @@ const App = () => {
       )}
 
       <View style={styles.header}>
-        <Image source={LogoImage} style={styles.logo} resizeMode="contain" />
+        <TouchableOpacity onPress={() => Linking.openURL('https://www.prosper-isd.net/')}>
+          <Image source={LogoImage} style={styles.logo} resizeMode="contain" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => Linking.openURL('https://www.puranjayp.com')}>
+          <Text style={{color: 'blue'}}>
+            By: Puranjay
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Conditional content rendering based on the screen state */}
       {screen === 'home' && (
         <View style={styles.content}>
-          <Text style={styles.info}>{currentDate}</Text>
-          <Text style={styles.info}>Day: {currentDay}</Text>
+          {/* <Text style={styles.info}>{currentDate}</Text> */}
+          <Text style={styles.info}>Day: {currentDate}</Text>
           <Text style={styles.info}>{currentTime}</Text>
-          <Text style={styles.info}>Variable Letter: {variableLetter}</Text>
+          <Text style={styles.info}>Schedule Day: {variableLetter}</Text>
         </View>
       )}
 
       {screen === 'food' && (
         <View style={styles.content}>
           {/* <Text style={styles.info}>Food Screen</Text> */}
-          <Text style={styles.info}>Select a School Menu:</Text>
-          <Picker
+          {/* <Text style={styles.info}>Schedule:</Text> */}
+          {scheduleURL ? <Image source={{ uri: scheduleURL }} style={styles.image} resizeMode="contain" /> : null}
+          {/* <div style= {{height:550}}>
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@2.5.207/build/pdf.worker.min.js">
+                <Viewer fileUrl="https://firebasestorage.googleapis.com/v0/b/id-to-rearource" />
+
+            ...
+            </Worker>
+          </div> */}
+          {/* <Picker
             selectedValue={selectedSchool}
             style={{height: 50, width: 150}}
             onValueChange={(itemValue, itemIndex) => setSelectedSchool(itemValue)}>
@@ -150,7 +174,7 @@ const App = () => {
             style={styles.goButton}
             onPress={handleGoButtonPress}>
             <Text style={styles.goButtonText}>Go</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       )}
 
@@ -161,7 +185,7 @@ const App = () => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuButton} onPress={() => setScreen('food')}>
           {/* Update icon to food-related, like "food-fork-drink" */}
-          <Icon name="food-fork-drink" size={24} color="white" />
+          <Icon name="calendar" size={24} color="white" />
         </TouchableOpacity>
       </View>
     </View>
@@ -189,7 +213,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   logo: {
-    marginTop: 300,
+    marginTop: 200,
     width: 200, // Set the width of the logo as needed
     height: 100, // Set the height of the logo as needed
   },
@@ -246,6 +270,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
+  image: {
+    width: 400, // Set appropriate width
+    height: 300, // Set appropriate height
+    marginTop: 20, // Optional: add some margin at the top
+  },
+  // pdf: {
+  //   flex:1,
+  //   width:Dimensions.get('window').width,
+  //   height:Dimensions.get('window').height,
+  // }
 });
 
 export default App;
